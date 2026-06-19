@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STS — Survey Admin</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --navy:        #1B3A6B;
+  --navy-dark:   #112447;
+  --navy-light:  #e8eef7;
+  --navy-mid:    #3a5f9e;
+  --accent:      #2176AE;
+  --accent-light:#deeaf6;
+  --text:        #1a1a2e;
+  --text-muted:  #5a6380;
+  --border:      #cdd6e8;
+  --bg:          #f4f6fb;
+  --white:       #ffffff;
+  --success:     #1a7a4a;
+  --success-bg:  #e6f5ee;
+  --error:       #c0392b;
+  --error-bg:    #fdecea;
+  --warn-bg:     #fff8e1;
+  --warn:        #b45309;
+  --radius:      10px;
+  --radius-sm:   6px;
+  --sidebar-w:   230px;
+}
+
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; min-height: 100vh; display: flex; flex-direction: column; }
+
+/* ── TOPBAR ─────────────────────────────────────────────────── */
+.topbar {
+  background: var(--navy-dark); color: #fff; height: 52px;
+  display: flex; align-items: center; padding: 0 1.5rem;
+  gap: 1rem; flex-shrink: 0; position: sticky; top: 0; z-index: 200;
+}
+.topbar-logo { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; }
+.topbar-logo span { color: #8FAFD6; font-weight: 400; }
+.topbar-sep { color: #3a5f9e; font-size: 18px; }
+.topbar-title { font-size: 13px; font-weight: 600; color: #B8CCE4; }
+.topbar-spacer { flex: 1; }
+.topbar-badge { background: rgba(255,255,255,0.1); border-radius: 99px; padding: 0.2rem 0.75rem; font-size: 12px; color: #B8CCE4; }
+.topbar-link { font-size: 12px; color: #8FAFD6; text-decoration: none; border: 1px solid #3a5f9e; padding: 0.3rem 0.75rem; border-radius: var(--radius-sm); transition: background 0.15s; }
+.topbar-link:hover { background: rgba(255,255,255,0.08); }
+
+/* ── LAYOUT ─────────────────────────────────────────────────── */
+.shell { display: flex; flex: 1; min-height: 0; }
+
+/* ── SIDEBAR ────────────────────────────────────────────────── */
+.sidebar {
+  width: var(--sidebar-w); flex-shrink: 0;
+  background: var(--white); border-right: 1px solid var(--border);
+  padding: 1.25rem 0; display: flex; flex-direction: column; gap: 0.25rem;
+  position: sticky; top: 52px; height: calc(100vh - 52px); overflow-y: auto;
+}
+.sidebar-section { padding: 0.5rem 1rem 0.2rem; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); }
+.nav-item {
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.55rem 1.25rem; font-size: 13px; color: var(--text-muted);
+  cursor: pointer; border-left: 3px solid transparent;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  user-select: none;
+}
+.nav-item:hover { background: var(--navy-light); color: var(--navy); }
+.nav-item.active { background: var(--accent-light); color: var(--accent); border-left-color: var(--accent); font-weight: 600; }
+.nav-icon { font-size: 15px; flex-shrink: 0; }
+
+/* ── CONTENT ────────────────────────────────────────────────── */
+.content { flex: 1; overflow-y: auto; padding: 1.75rem; display: flex; flex-direction: column; gap: 1.5rem; min-width: 0; }
+
+/* ── PAGE HEADER ────────────────────────────────────────────── */
+.page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.page-title { font-size: 1.35rem; font-weight: 700; color: var(--navy); }
+.page-sub { font-size: 13px; color: var(--text-muted); margin-top: 0.2rem; }
+.btn { border: none; padding: 0.55rem 1.1rem; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s, opacity 0.15s; display: inline-flex; align-items: center; gap: 0.4rem; }
+.btn-primary { background: var(--navy); color: #fff; }
+.btn-primary:hover { background: var(--navy-dark); }
+.btn-outline { background: var(--white); color: var(--accent); border: 1.5px solid var(--accent); }
+.btn-outline:hover { background: var(--accent-light); }
+.btn-danger { background: var(--error-bg); color: var(--error); border: 1px solid #f5c6c2; }
+.btn-danger:hover { background: #fad4d1; }
+.btn-sm { padding: 0.3rem 0.75rem; font-size: 12px; }
+
+/* ── STAT CARDS ─────────────────────────────────────────────── */
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1rem; }
+.stat-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.1rem 1.25rem; display: flex; flex-direction: column; gap: 0.3rem; }
+.stat-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); }
+.stat-value { font-size: 1.9rem; font-weight: 700; color: var(--navy); line-height: 1; }
+.stat-sub { font-size: 12px; color: var(--text-muted); }
+.stat-card.accent { border-left: 4px solid var(--accent); }
+.stat-card.green  { border-left: 4px solid var(--success); }
+.stat-card.amber  { border-left: 4px solid #e67e22; }
+.stat-card.red    { border-left: 4px solid var(--error); }
+
+/* ── CARDS ──────────────────────────────────────────────────── */
+.card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.card-header { padding: 0.9rem 1.25rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 1rem; background: var(--navy-light); }
+.card-title { font-size: 13px; font-weight: 700; color: var(--navy); text-transform: uppercase; letter-spacing: 0.05em; }
+.card-body { padding: 1.25rem; }
+
+/* ── CHART GRIDS ────────────────────────────────────────────── */
+.chart-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.chart-grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
+@media (max-width: 900px) { .chart-grid-2 { grid-template-columns: 1fr; } }
+.chart-wrap { position: relative; height: 240px; }
+.chart-wrap-tall { position: relative; height: 340px; }
+.chart-wrap-wide { position: relative; height: 200px; }
+
+/* ── BAR CHART (CSS) ────────────────────────────────────────── */
+.bar-chart-list { display: flex; flex-direction: column; gap: 0.7rem; }
+.bar-row { display: flex; flex-direction: column; gap: 0.25rem; }
+.bar-meta { display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
+.bar-label { color: var(--text); line-height: 1.3; flex: 1; margin-right: 0.5rem; }
+.bar-count { font-weight: 700; color: var(--navy); white-space: nowrap; font-size: 12px; }
+.bar-track { height: 8px; background: var(--navy-light); border-radius: 99px; overflow: hidden; }
+.bar-fill { height: 100%; background: var(--accent); border-radius: 99px; transition: width 0.5s ease; }
+.bar-fill.green  { background: var(--success); }
+.bar-fill.amber  { background: #e67e22; }
+.bar-fill.purple { background: #7c3aed; }
+
+/* ── RATING TABLE ───────────────────────────────────────────── */
+.rating-agg-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.rating-agg-table th { background: var(--navy); color: #fff; padding: 0.5rem 0.75rem; font-size: 11px; font-weight: 700; text-align: left; letter-spacing: 0.04em; }
+.rating-agg-table th:not(:first-child) { text-align: center; }
+.rating-agg-table td { padding: 0.55rem 0.75rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.rating-agg-table tr:last-child td { border-bottom: none; }
+.rating-agg-table tr:nth-child(even) td { background: var(--navy-light); }
+.rating-agg-table td:not(:first-child) { text-align: center; }
+.avg-badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 99px; }
+.avg-5 { background: #d4f0e5; color: #176b3e; }
+.avg-4 { background: #deeaf6; color: #1B3A6B; }
+.avg-3 { background: #f0f0f5; color: #5a6380; }
+.avg-2 { background: #fff0cc; color: #7a5500; }
+.avg-1 { background: #fde8e8; color: #8b1a1a; }
+
+/* ── RANK LIST ──────────────────────────────────────────────── */
+.rank-agg-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.rank-agg-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0.8rem; border: 1px solid var(--border); border-radius: var(--radius-sm); }
+.rank-agg-item.top { border-color: var(--accent); background: var(--accent-light); }
+.rank-agg-badge { background: var(--navy); color: #fff; font-size: 11px; font-weight: 700; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.rank-agg-item.top .rank-agg-badge { background: var(--accent); }
+.rank-agg-text { flex: 1; font-size: 13px; }
+.rank-agg-score { font-size: 12px; color: var(--text-muted); }
+
+/* ── RESPONSES TABLE ────────────────────────────────────────── */
+.responses-table-wrap { overflow-x: auto; }
+.responses-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.responses-table th { background: var(--navy); color: #fff; padding: 0.6rem 0.9rem; text-align: left; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; white-space: nowrap; }
+.responses-table td { padding: 0.6rem 0.9rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.responses-table tr:hover td { background: var(--navy-light); cursor: pointer; }
+.responses-table tr:last-child td { border-bottom: none; }
+.verdict-chip { display: inline-block; font-size: 11px; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 99px; white-space: nowrap; }
+.chip-sa { background: #d4f0e5; color: #176b3e; }
+.chip-a  { background: var(--accent-light); color: #1B3A6B; }
+.chip-n  { background: #f0f0f5; color: #5a6380; }
+.chip-d  { background: #fff0cc; color: #7a5500; }
+.chip-sd { background: #fde8e8; color: #8b1a1a; }
+.tag-sm { display: inline-block; background: var(--navy-light); color: var(--navy); font-size: 11px; padding: 0.1rem 0.45rem; border-radius: 99px; margin: 1px; }
+
+/* ── PAGINATION ─────────────────────────────────────────────── */
+.pagination { display: flex; align-items: center; gap: 0.5rem; justify-content: flex-end; }
+.page-btn { background: var(--white); border: 1px solid var(--border); color: var(--text); padding: 0.35rem 0.7rem; border-radius: var(--radius-sm); font-size: 13px; cursor: pointer; transition: background 0.12s; }
+.page-btn:hover:not(:disabled) { background: var(--navy-light); }
+.page-btn.active { background: var(--navy); color: #fff; border-color: var(--navy); font-weight: 700; }
+.page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.page-info { font-size: 12px; color: var(--text-muted); }
+
+/* ── DRAWER (response detail) ───────────────────────────────── */
+.drawer-overlay { position: fixed; inset: 0; background: rgba(17,36,71,0.45); z-index: 300; display: none; }
+.drawer-overlay.open { display: block; }
+.drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(680px, 100vw); background: var(--white); z-index: 301; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); display: flex; flex-direction: column; overflow: hidden; }
+.drawer.open { transform: translateX(0); }
+.drawer-header { background: var(--navy); color: #fff; padding: 1.1rem 1.5rem; display: flex; align-items: center; gap: 1rem; flex-shrink: 0; }
+.drawer-title { font-size: 15px; font-weight: 700; flex: 1; }
+.drawer-sub { font-size: 12px; color: #B8CCE4; }
+.drawer-close { background: rgba(255,255,255,0.12); border: none; color: #fff; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.15s; }
+.drawer-close:hover { background: rgba(255,255,255,0.22); }
+.drawer-body { flex: 1; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; }
+.drawer-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 0.75rem; flex-shrink: 0; }
+
+/* Drawer detail sections */
+.detail-section { display: flex; flex-direction: column; gap: 0.75rem; }
+.detail-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); padding-bottom: 0.4rem; border-bottom: 1px solid var(--border); }
+.detail-row { display: flex; flex-direction: column; gap: 0.2rem; }
+.detail-q { font-size: 11px; font-weight: 600; color: var(--text-muted); }
+.detail-a { font-size: 13px; color: var(--text); }
+.detail-text-a { background: var(--navy-light); border-left: 3px solid var(--accent); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; padding: 0.5rem 0.75rem; font-size: 13px; font-style: italic; color: var(--text); margin-top: 0.15rem; }
+.detail-text-a.empty { color: var(--text-muted); font-style: normal; }
+.tags-row { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.15rem; }
+.tag-pill { background: var(--accent-light); color: var(--accent); border: 1px solid #b4d4ee; border-radius: 99px; font-size: 11px; font-weight: 600; padding: 0.15rem 0.55rem; }
+
+/* Detail rating mini-table */
+.detail-rating-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.detail-rating-table td { padding: 0.4rem 0.5rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.detail-rating-table td:first-child { padding-left: 0; }
+.detail-rating-table td:last-child { text-align: right; padding-right: 0; }
+.detail-rating-table tr:last-child td { border-bottom: none; }
+.mini-pill { display: inline-block; font-size: 10px; font-weight: 700; padding: 0.15rem 0.45rem; border-radius: 99px; }
+
+/* Detail rank list */
+.detail-rank-list { display: flex; flex-direction: column; gap: 0.3rem; margin-top: 0.15rem; }
+.detail-rank-item { display: flex; align-items: center; gap: 0.55rem; padding: 0.35rem 0.65rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 12px; }
+.detail-rank-item.top3 { border-color: var(--accent); background: var(--accent-light); }
+.detail-rank-badge { background: var(--navy); color: #fff; font-size: 10px; font-weight: 700; width: 19px; height: 19px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.detail-rank-item.top3 .detail-rank-badge { background: var(--accent); }
+
+/* ── LOADING / EMPTY / ERROR ────────────────────────────────── */
+.state-box { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 2rem; text-align: center; gap: 0.75rem; color: var(--text-muted); }
+.state-icon { font-size: 2.5rem; }
+.state-title { font-size: 15px; font-weight: 700; color: var(--text); }
+.state-sub { font-size: 13px; }
+.spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.section-page { display: none; }
+.section-page.active { display: contents; }
+
+/* Timeline area */
+.timeline-wrap { position: relative; height: 160px; }
+
+@media (max-width: 700px) {
+  .sidebar { display: none; }
+  .chart-grid-2, .chart-grid-3 { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<nav class="topbar">
+  <a href="/" class="topbar-logo">SEA TRANSPORT SERVICE <span>·</span></a>
+  <span class="topbar-sep">|</span>
+  <span class="topbar-title">Survey Admin</span>
+  <span class="topbar-spacer"></span>
+  <span class="topbar-badge" id="total-badge">Loading…</span>
+  <a href="/" class="topbar-link" target="_blank">↗ View Survey</a>
+</nav>
+
+<div class="shell">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-section">Overview</div>
+    <div class="nav-item active" data-page="overview">
+      <span class="nav-icon">📊</span> Dashboard
+    </div>
+    <div class="sidebar-section">Analysis</div>
+    <div class="nav-item" data-page="communication">
+      <span class="nav-icon">📡</span> Communication
+    </div>
+    <div class="nav-item" data-page="business">
+      <span class="nav-icon">💼</span> Business Case
+    </div>
+    <div class="nav-item" data-page="features">
+      <span class="nav-icon">⭐</span> Feature Priorities
+    </div>
+    <div class="nav-item" data-page="concerns">
+      <span class="nav-icon">🔒</span> Concerns
+    </div>
+    <div class="nav-item" data-page="verdict">
+      <span class="nav-icon">✅</span> Overall Verdict
+    </div>
+    <div class="sidebar-section">Responses</div>
+    <div class="nav-item" data-page="responses">
+      <span class="nav-icon">📋</span> All Responses
+    </div>
+  </nav>
+
+  <!-- CONTENT -->
+  <main class="content" id="content">
+    <div class="state-box" id="loading-state">
+      <div class="spinner"></div>
+      <div class="state-title">Loading survey data…</div>
+    </div>
+  </main>
+
+</div>
+
+<!-- DRAWER OVERLAY -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+
+<!-- RESPONSE DETAIL DRAWER -->
+<div class="drawer" id="response-drawer">
+  <div class="drawer-header">
+    <div>
+      <div class="drawer-title" id="drawer-title">Response Detail</div>
+      <div class="drawer-sub" id="drawer-sub"></div>
+    </div>
+    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="drawer-body" id="drawer-body"></div>
+  <div class="drawer-footer">
+    <button class="btn btn-danger btn-sm" id="drawer-delete-btn">🗑 Delete response</button>
+    <button class="btn btn-outline btn-sm" onclick="closeDrawer()">Close</button>
+  </div>
+</div>
+
+<script>
+/* ─────────────────────────────────────────────
+   STATE
+───────────────────────────────────────────── */
+let agg      = null;   // aggregate data
+let respPage = 1;
+let respTotal = 0;
+let respPages = 1;
+let currentResponseId = null;
+const charts = {};     // track Chart.js instances
+
+/* ─────────────────────────────────────────────
+   NAVIGATION
+───────────────────────────────────────────── */
+document.querySelectorAll('.nav-item').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    el.classList.add('active');
+    renderPage(el.dataset.page);
+  });
+});
+
+function activePage() {
+  return document.querySelector('.nav-item.active')?.dataset?.page || 'overview';
+}
+
+/* ─────────────────────────────────────────────
+   FETCH
+───────────────────────────────────────────── */
+async function fetchAgg() {
+  const r = await fetch('/api/admin/aggregate');
+  return r.json();
+}
+
+async function fetchResponses(page = 1) {
+  const r = await fetch(`/api/admin/responses?page=${page}&limit=15`);
+  return r.json();
+}
+
+async function fetchResponse(id) {
+  const r = await fetch(`/api/admin/responses/${id}`);
+  return r.json();
+}
+
+async function deleteResponse(id) {
+  const r = await fetch(`/api/admin/responses/${id}`, { method: 'DELETE' });
+  return r.json();
+}
+
+/* ─────────────────────────────────────────────
+   INIT
+───────────────────────────────────────────── */
+async function init() {
+  try {
+    const data = await fetchAgg();
+    if (!data.ok) throw new Error(data.error);
+    agg = data;
+    document.getElementById('total-badge').textContent =
+      `${agg.total} response${agg.total !== 1 ? 's' : ''}`;
+    renderPage('overview');
+  } catch(err) {
+    document.getElementById('content').innerHTML = `
+      <div class="state-box">
+        <div class="state-icon">⚠️</div>
+        <div class="state-title">Could not load data</div>
+        <div class="state-sub">${err.message}</div>
+        <button class="btn btn-primary" onclick="location.reload()">Retry</button>
+      </div>`;
+  }
+}
+
+/* ─────────────────────────────────────────────
+   RENDER ROUTER
+───────────────────────────────────────────── */
+function renderPage(page) {
+  // destroy old charts
+  Object.values(charts).forEach(c => c.destroy());
+  for (const k in charts) delete charts[k];
+
+  const content = document.getElementById('content');
+
+  if (!agg || agg.total === 0) {
+    content.innerHTML = emptyHTML();
+    return;
+  }
+
+  const pages = {
+    overview:      renderOverview,
+    communication: renderCommunication,
+    business:      renderBusiness,
+    features:      renderFeatures,
+    concerns:      renderConcerns,
+    verdict:       renderVerdict,
+    responses:     renderResponses,
+  };
+
+  (pages[page] || renderOverview)(content);
+}
+
+/* ─────────────────────────────────────────────
+   HELPERS
+───────────────────────────────────────────── */
+function emptyHTML() {
+  return `<div class="state-box">
+    <div class="state-icon">📭</div>
+    <div class="state-title">No responses yet</div>
+    <div class="state-sub">Survey responses will appear here once staff begin submitting.</div>
+    <a href="/" target="_blank" class="btn btn-primary">↗ Open Survey</a>
+  </div>`;
+}
+
+function barChart(items, maxVal, color = '') {
+  return `<div class="bar-chart-list">${items.map(item => `
+    <div class="bar-row">
+      <div class="bar-meta">
+        <span class="bar-label">${item.label}</span>
+        <span class="bar-count">${item.count} (${item.pct}%)</span>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill ${color}" style="width:${Math.round(item.count/maxVal*100)}%"></div>
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function verdictChipHtml(val) {
+  if (!val) return '<span class="verdict-chip chip-n">—</span>';
+  if (val.startsWith('Strongly agree')) return `<span class="verdict-chip chip-sa">Strongly agree</span>`;
+  if (val.startsWith('Agree'))          return `<span class="verdict-chip chip-a">Agree</span>`;
+  if (val.startsWith('Neutral'))        return `<span class="verdict-chip chip-n">Neutral</span>`;
+  if (val.startsWith('Disagree') && !val.startsWith('Strongly')) return `<span class="verdict-chip chip-d">Disagree</span>`;
+  return `<span class="verdict-chip chip-sd">Strongly disagree</span>`;
+}
+
+function avgBadge(avg) {
+  const cls = avg >= 4.5 ? 'avg-5' : avg >= 3.5 ? 'avg-4' : avg >= 2.5 ? 'avg-3' : avg >= 1.5 ? 'avg-2' : 'avg-1';
+  const label = avg >= 4.5 ? 'Very positive' : avg >= 3.5 ? 'Positive' : avg >= 2.5 ? 'Neutral' : avg >= 1.5 ? 'Negative' : 'Very negative';
+  return `<span class="avg-badge ${cls}">${avg.toFixed(1)} — ${label}</span>`;
+}
+
+function pillClass(key) {
+  return { SA:'chip-sa', A:'chip-a', N:'chip-n', D:'chip-d', SD:'chip-sd' }[key] || 'chip-n';
+}
+function pillLabel(key) {
+  return { SA:'Strongly agree', A:'Agree', N:'Neutral', D:'Disagree', SD:'Strongly disagree' }[key] || key;
+}
+
+function textA(val) {
+  if (!val || !val.trim()) return `<div class="detail-text-a empty">No response</div>`;
+  return `<div class="detail-text-a">${val.trim()}</div>`;
+}
+
+/* ─────────────────────────────────────────────
+   PAGE: OVERVIEW
+───────────────────────────────────────────── */
+function renderOverview(content) {
+  // Top verdict stats
+  const verdictMap = {};
+  (agg.q12 || []).forEach(d => { verdictMap[d.label] = d.count; });
+  const positive = (verdictMap['Strongly agree — it is clearly needed'] || 0) + (verdictMap['Agree — it would be beneficial'] || 0);
+  const positivePct = Math.round(positive / agg.total * 100);
+
+  const q2Map = {};
+  (agg.q2 || []).forEach(d => { q2Map[d.label] = d.count; });
+  const struggling = (q2Map['Very often'] || 0) + (q2Map['Often'] || 0);
+  const strugglingPct = Math.round(struggling / agg.total * 100);
+
+  content.innerHTML = `
+    <div class="page-header">
+      <div><div class="page-title">Dashboard Overview</div><div class="page-sub">All ${agg.total} submitted responses · Last updated now</div></div>
+      <button class="btn btn-outline" onclick="init()">↺ Refresh</button>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-card accent">
+        <div class="stat-label">Total Responses</div>
+        <div class="stat-value">${agg.total}</div>
+        <div class="stat-sub">Since survey launched</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-label">Support Rate</div>
+        <div class="stat-value">${positivePct}%</div>
+        <div class="stat-sub">Agree or strongly agree</div>
+      </div>
+      <div class="stat-card amber">
+        <div class="stat-label">Info Struggles</div>
+        <div class="stat-value">${strugglingPct}%</div>
+        <div class="stat-sub">Often or very often</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Departments</div>
+        <div class="stat-value">${agg.departments?.length || 0}</div>
+        <div class="stat-sub">Unique departments</div>
+      </div>
+    </div>
+
+    <div class="chart-grid-2">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Overall Verdict (Q12)</span></div>
+        <div class="card-body">
+          <div class="chart-wrap"><canvas id="chart-verdict"></canvas></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Difficulty Finding Info (Q2)</span></div>
+        <div class="card-body">
+          <div class="chart-wrap"><canvas id="chart-q2"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><span class="card-title">Submissions Over Time</span></div>
+      <div class="card-body">
+        <div class="timeline-wrap"><canvas id="chart-timeline"></canvas></div>
+      </div>
+    </div>
+
+    <div class="chart-grid-2">
+      <div class="card">
+        <div class="card-header"><span class="card-title">By Department</span></div>
+        <div class="card-body">${barChart(agg.departments || [], agg.total)}</div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">By Location</span></div>
+        <div class="card-body">${barChart(agg.locations || [], agg.total, 'purple')}</div>
+      </div>
+    </div>`;
+
+  // Verdict doughnut
+  const q12Labels = (agg.q12 || []).map(d => d.label.split('—')[0].trim());
+  const q12Colors = ['#1a7a4a','#2176AE','#9ca3af','#e67e22','#c0392b'];
+  charts.verdict = new Chart(document.getElementById('chart-verdict'), {
+    type: 'doughnut',
+    data: { labels: q12Labels, datasets: [{ data: (agg.q12||[]).map(d=>d.count), backgroundColor: q12Colors, borderWidth: 2, borderColor: '#fff' }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { font: { size: 11 }, boxWidth: 12 } } } }
+  });
+
+  // Q2 bar
+  const q2Order = ['Very often','Often','Sometimes','Rarely','Never'];
+  const q2Sorted = q2Order.map(l => (agg.q2||[]).find(d=>d.label===l) || { label:l, count:0 });
+  charts.q2 = new Chart(document.getElementById('chart-q2'), {
+    type: 'bar',
+    data: { labels: q2Sorted.map(d=>d.label), datasets: [{ data: q2Sorted.map(d=>d.count), backgroundColor: ['#c0392b','#e67e22','#2176AE','#27ae60','#1a7a4a'], borderRadius: 4, borderSkipped: false }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+  });
+
+  // Timeline
+  const tl = agg.timeline || [];
+  charts.timeline = new Chart(document.getElementById('chart-timeline'), {
+    type: 'line',
+    data: { labels: tl.map(d=>d.date), datasets: [{ data: tl.map(d=>d.count), borderColor: '#2176AE', backgroundColor: 'rgba(33,118,174,0.1)', fill: true, tension: 0.3, pointRadius: 4, pointBackgroundColor: '#2176AE' }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+  });
+}
+
+/* ─────────────────────────────────────────────
+   PAGE: COMMUNICATION
+───────────────────────────────────────────── */
+function renderCommunication(content) {
+  const maxQ1 = Math.max(...(agg.q1||[]).map(d=>d.count), 1);
+  content.innerHTML = `
+    <div class="page-header">
+      <div><div class="page-title">Communication Challenges</div><div class="page-sub">Section 1 — How staff currently receive and find information</div></div>
+    </div>
+
+    <div class="chart-grid-2">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Current Update Channels (Q1)</span></div>
+        <div class="card-body">${barChart(agg.q1||[], maxQ1)}</div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Frequency of Info Difficulty (Q2)</span></div>
+        <div class="card-body"><div class="chart-wrap"><canvas id="chart-q2-comm"></canvas></div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><span class="card-title">Wasted Time Searching for Documents (Q4)</span></div>
+      <div class="card-body"><div class="chart-wrap" style="max-width:400px;height:200px;"><canvas id="chart-q4"></canvas></div></div>
+    </div>`;
+
+  const q2Order = ['Very often','Often','Sometimes','Rarely','Never'];
+  const q2Sorted = q2Order.map(l => (agg.q2||[]).find(d=>d.label===l) || { label:l, count:0 });
+  charts.q2comm = new Chart(document.getElementById('chart-q2-comm'), {
+    type: 'bar',
+    data: { labels: q2Sorted.map(d=>d.label), datasets: [{ data: q2Sorted.map(d=>d.count), backgroundColor: ['#c0392b','#e67e22','#2176AE','#27ae60','#1a7a4a'], borderRadius: 4, borderSkipped: false }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+  });
+
+  const q4 = agg.q4 || [];
+  charts.q4 = new Chart(document.getElementById('chart-q4'), {
+    type: 'pie',
+    data: { labels: q4.map(d=>d.label), datasets: [{ data: q4.map(d=>d.count), backgroundColor: ['#c0392b','#27ae60'], borderWidth: 2, borderColor: '#fff' }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { font: { size: 12 } } } } }
+  });
+}
+
+/* ─────────────────────────────────────────────
+   PAGE: BUSINESS CASE
+───────────────────────────────────────────── */
+function renderBusiness(content) {
+  const maxQ7 = Math.max(...(agg.q7||[]).map(d=>d.count), 1);
+
+  const ratingRows = (agg.ratings||[]).map(r => {
+    const total = Object.values(r.buckets).reduce((a,b)=>a+b, 0) || 1;
+    const bucketBar = ['SA','A','N','D','SD'].map(k => {
+      const pct = Math.round(r.buckets[k] / total * 100);
+      const colors = { SA:'#1a7a4a', A:'#2176AE', N:'#9ca3af', D:'#e67e22', SD:'#c0392b' };
+      return pct > 0 ? `<div style="width:${pct}%;background:${colors[k]};height:100%;float:left;" title="${k}: ${pct}%"></div>` : '';
+    }).join('');
+    return `<tr>
+      <td>${r.stmt}</td>
+      <td>${avgBadge(r.avg)}</td>
+      <td style="width:150px"><div style="height:12px;border-radius:6px;overflow:hidden;background:var(--border)">${bucketBar}</div></td>
+    </tr>`;
+  }).join('');
+
+  content.innerHTML = `
+    <div class="page-header">
+      <div><div class="page-title">Business Case</div><div class="page-sub">Section 2 — Agreement ratings and key business problems</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><span class="card-title">Agreement Ratings (Q5) — Average Score out of 5</span></div>
+      <div class="card-body">
+        <table class="rating-agg-table">
+          <thead><tr><th>Statement</th><th>Avg score</th><th>Breakdown</th></tr></thead>
+          <tbody>${ratingRows}</tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><span class="card-title">Top Business Problems an Intranet Would Solve (Q7)</span></div>
+      <div class="card-body">${barChart(agg.q7||[], maxQ7, 'green')}</div>
+    </div>`;
+}
+
+/* ─────────────────────────────────────────────
+   PAGE: FEATURES
+───────────────────────────────────────────── */
+function renderFeatures(content) {
+  const rankItems = (agg.ranking||[]).map((r,i) => `
+    <div class="rank-agg-item ${i<3?'top':''}">
+      <div class="rank-agg-badge">${i+1}</div>
+      <div class="rank-agg-text">${r.item}</div>
+      <div class="rank-agg-score">avg rank ${r.avgRank}</div>
+    </div>`).join('');
+
+  content.innerHTML = `
+    <div class="page-header">
+      <div><div class="page-title">Feature Priorities</div><div class="page-sub">Section 3 — Average feature ranking across all respondents (lower avg = higher priority)</div></div>
+    </div>
+
+    <div class="chart-grid-2">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Average Feature Ranking (Q8)</span></div>
+        <div class="card-body"><div class="rank-agg-list">${rankItems}</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Average Rank Score (lower = higher priority)</span></div>
+        <div class="card-body"><div class="chart-wrap-tall"><canvas id="chart-rank"></canvas></div></div>
+      </div>
+    </div>`;
+
+  const rankData = agg.ranking || [];
+  charts.rank = new Chart(document.getElementById('chart-rank'), {
+    type: 'bar',
+    data: {
+      labels: rankData.map(r => r.item.length > 22 ? r.item.slice(0,22)+'…' : r.item),
+      datasets: [{ data: rankData.map(r=>r.avgRank), backgroundColor: rankData.map((_,i)=> i<3 ? '#2176AE' : '#b4d4ee'), borderRadius: 4, borderSkipped: false }]
+    },
+    options: {
+      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { x: { beginAtZero: true, max: rankData.length, title: { display: true, text: 'Average rank position' } } }
+    }
+  });
+}
+
+/* ─────────────────────────────────────────────
+   PAGE: CONCERNS
+───────────────────────────────────────────── */
+function renderConcerns(content) {
+  const maxQ10 = Math.max(...(agg.q10||[]).map(d=>d.count), 1);
+  content.innerHTML = `
+    <div class="page-header">
+      <div><div class="page-title">Concerns &amp; Barriers</div><div class="page-sub">Section 4 — What staff are worried about</div></div>
+    </div>
+
+    <div class="chart-grid-2">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Stated Concerns (Q10)</span></div>
+        <div class="card-body">${barChart(agg.q10||[], maxQ10, 'amber')}</div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Concerns Breakdown</span></div>
+        <div class="card-body"><div class="chart-wrap"><canvas id="chart-q10"></canvas></div></div>
+      </div>
+    </div>`;
+
+  charts.q10 = new Chart(document.getElementById('chart-q10'), {
+    type: 'doughnut',
+    data: {
+      labels: (agg.q10||[]).map(d => d.label.length > 28 ? d.label.slice(0,28)+'…' : d.label),
+      datasets: [{ data: (agg.q10||[]).map(d=>d.count), backgroundColor: ['#e67e22','#c0392b','#2176AE','#7c3aed','#1a7a4a','#27ae60','#9ca3af'], borderWidth: 2, borderColor: '#fff' }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { font: { size: 10 }, boxWidth: 10 } } } }
+  });
+}
+
+/* ─────────────────────────────────────────────
+   PAGE: VERDICT
+───────────────────────────────────────────── */
+function renderVerdict(content) {
+  content.innerHTML = `
+    <div class="page-header">
+      <div><div class="page-title">Overall Verdict</div><div class="page-sub">Section 5 — Staff's overall view on intranet deployment</div></div>
+    </div>
+
+    <div class="chart-grid-2">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Overall Benefit Assessment (Q12)</span></div>
+        <div class="card-body"><div class="chart-wrap"><canvas id="chart-q12-v"></canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Response Breakdown</span></div>
+        <div class="card-body">
+          ${barChart(agg.q12||[], agg.total)}
+        </div>
+      </div>
+    </div>`;
+
+  const q12Labels = (agg.q12||[]).map(d => d.label.split('—')[0].trim());
+  charts.q12v = new Chart(document.getElementById('chart-q12-v'), {
+    type: 'doughnut',
+    data: { labels: q12Labels, datasets: [{ data: (agg.q12||[]).map(d=>d.count), backgroundColor: ['#1a7a4a','#2176AE','#9ca3af','#e67e22','#c0392b'], borderWidth: 2, borderColor: '#fff' }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { font: { size: 11 }, boxWidth: 12 } } } }
+  });
+}
+
+/* ─────────────────────────────────────────────
+   PAGE: RESPONSES
+───────────────────────────────────────────── */
+async function renderResponses(content) {
+  content.innerHTML = `
+    <div class="page-header">
+      <div><div class="page-title">All Responses</div><div class="page-sub">Browse individual submissions</div></div>
+      <button class="btn btn-outline" onclick="reloadResponses()">↺ Refresh</button>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Submissions</span><span id="resp-count" style="font-size:12px;color:var(--text-muted)"></span></div>
+      <div class="card-body" style="padding:0;" id="resp-table-area">
+        <div class="state-box"><div class="spinner"></div></div>
+      </div>
+    </div>
+    <div class="pagination" id="pagination"></div>`;
+
+  await loadResponsesPage(1);
+}
+
+async function loadResponsesPage(page) {
+  respPage = page;
+  const area = document.getElementById('resp-table-area');
+  if (!area) return;
+  area.innerHTML = '<div class="state-box"><div class="spinner"></div></div>';
+
+  const data = await fetchResponses(page);
+  respTotal = data.total;
+  respPages = data.pages;
+  document.getElementById('resp-count').textContent = `${data.total} total`;
+
+  if (!data.data || data.data.length === 0) {
+    area.innerHTML = '<div class="state-box"><div class="state-icon">📭</div><div class="state-title">No responses yet</div></div>';
+    return;
+  }
+
+  area.innerHTML = `
+    <div class="responses-table-wrap">
+      <table class="responses-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Submitted</th>
+            <th>Department</th>
+            <th>Role</th>
+            <th>Location</th>
+            <th>Struggles (Q2)</th>
+            <th>Verdict (Q12)</th>
+          </tr>
+        </thead>
+        <tbody id="resp-tbody"></tbody>
+      </table>
+    </div>`;
+
+  const tbody = document.getElementById('resp-tbody');
+  const offset = (page - 1) * 15;
+  data.data.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="color:var(--text-muted);font-size:12px;">${offset+i+1}</td>
+      <td style="white-space:nowrap;">${new Date(r.submitted_at).toLocaleDateString()}</td>
+      <td>${r.dept || '<span style="color:var(--text-muted)">—</span>'}</td>
+      <td>${r.role || '<span style="color:var(--text-muted)">—</span>'}</td>
+      <td>${r.location || '<span style="color:var(--text-muted)">—</span>'}</td>
+      <td>${r.q2 || '—'}</td>
+      <td>${verdictChipHtml(r.q12)}</td>`;
+    tr.addEventListener('click', () => openDrawer(r._id));
+    tbody.appendChild(tr);
+  });
+
+  renderPagination();
+}
+
+function renderPagination() {
+  const pg = document.getElementById('pagination');
+  if (!pg) return;
+  if (respPages <= 1) { pg.innerHTML = ''; return; }
+
+  let html = `<span class="page-info">Page ${respPage} of ${respPages}</span>`;
+  html += `<button class="page-btn" onclick="loadResponsesPage(${respPage-1})" ${respPage<=1?'disabled':''}>‹ Prev</button>`;
+
+  const start = Math.max(1, respPage-2), end = Math.min(respPages, respPage+2);
+  for (let p = start; p <= end; p++) {
+    html += `<button class="page-btn ${p===respPage?'active':''}" onclick="loadResponsesPage(${p})">${p}</button>`;
+  }
+  html += `<button class="page-btn" onclick="loadResponsesPage(${respPage+1})" ${respPage>=respPages?'disabled':''}>Next ›</button>`;
+  pg.innerHTML = html;
+}
+
+async function reloadResponses() {
+  await loadResponsesPage(respPage);
+  const newAgg = await fetchAgg();
+  if (newAgg.ok) { agg = newAgg; document.getElementById('total-badge').textContent = `${agg.total} response${agg.total!==1?'s':''}`; }
+}
+
+/* ─────────────────────────────────────────────
+   DRAWER
+───────────────────────────────────────────── */
+async function openDrawer(id) {
+  currentResponseId = id;
+  document.getElementById('drawer-overlay').classList.add('open');
+  document.getElementById('response-drawer').classList.add('open');
+  document.getElementById('drawer-body').innerHTML = '<div class="state-box"><div class="spinner"></div></div>';
+  document.getElementById('drawer-title').textContent = 'Response Detail';
+  document.getElementById('drawer-sub').textContent = 'Loading…';
+
+  const result = await fetchResponse(id);
+  if (!result.ok) {
+    document.getElementById('drawer-body').innerHTML = '<div class="state-box"><div class="state-icon">⚠️</div><div class="state-title">Could not load response</div></div>';
+    return;
+  }
+
+  const r = result.data;
+  const submitted = new Date(r.submitted_at);
+  document.getElementById('drawer-title').textContent = r.dept ? `${r.role || 'Staff'} — ${r.dept}` : 'Anonymous Response';
+  document.getElementById('drawer-sub').textContent = `Submitted ${submitted.toLocaleString()} · ${r.location || 'Location unknown'}`;
+
+  document.getElementById('drawer-delete-btn').onclick = () => confirmDelete(id);
+
+  const ratingRows = (r.ratings||[]).map(row => `
+    <tr>
+      <td>${row.stmt}</td>
+      <td><span class="mini-pill ${pillClass(row.key)}">${row.label || '—'}</span></td>
+    </tr>`).join('');
+
+  const rankList = (r.ranking||[]).map((item,i) => `
+    <div class="detail-rank-item ${i<3?'top3':''}">
+      <div class="detail-rank-badge">${i+1}</div>
+      <span>${item}</span>
+    </div>`).join('');
+
+  document.getElementById('drawer-body').innerHTML = `
+    <!-- About -->
+    <div class="detail-section">
+      <div class="detail-section-title">About the Respondent</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+        <div class="detail-row"><div class="detail-q">Department</div><div class="detail-a">${r.dept||'—'}</div></div>
+        <div class="detail-row"><div class="detail-q">Role</div><div class="detail-a">${r.role||'—'}</div></div>
+        <div class="detail-row"><div class="detail-q">Years at STS</div><div class="detail-a">${r.tenure||'—'}</div></div>
+        <div class="detail-row"><div class="detail-q">Location</div><div class="detail-a">${r.location||'—'}</div></div>
+      </div>
+    </div>
+
+    <!-- Section 1 -->
+    <div class="detail-section">
+      <div class="detail-section-title">Communication Challenges</div>
+      <div class="detail-row">
+        <div class="detail-q">Q1 — Current update channels</div>
+        <div class="tags-row">${(r.q1||[]).map(v=>`<span class="tag-pill">${v}</span>`).join('') || '<span style="color:var(--text-muted);font-size:12px;">—</span>'}</div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-q">Q2 — Frequency of difficulty finding info</div>
+        <div class="detail-a">${r.q2||'—'}</div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-q">Q3 — What is hardest to find</div>
+        ${textA(r.q3)}
+      </div>
+      <div class="detail-row">
+        <div class="detail-q">Q4 — Wasted time searching</div>
+        <div class="detail-a">${r.q4||'—'}</div>
+        ${r.q4 === 'Yes' && r.q4detail ? textA(r.q4detail) : ''}
+      </div>
+    </div>
+
+    <!-- Section 2 -->
+    <div class="detail-section">
+      <div class="detail-section-title">Business Case</div>
+      <div class="detail-row">
+        <div class="detail-q">Q5 — Agreement ratings</div>
+        <table class="detail-rating-table" style="margin-top:0.25rem;">${ratingRows}</table>
+      </div>
+      <div class="detail-row">
+        <div class="detail-q">Q6 — Most important reason for intranet</div>
+        ${textA(r.q6)}
+      </div>
+      <div class="detail-row">
+        <div class="detail-q">Q7 — Business problems to solve</div>
+        <div class="tags-row">${(r.q7||[]).map(v=>`<span class="tag-pill">${v}</span>`).join('') || '<span style="color:var(--text-muted);font-size:12px;">—</span>'}</div>
+      </div>
+    </div>
+
+    <!-- Section 3 -->
+    <div class="detail-section">
+      <div class="detail-section-title">Feature Priorities</div>
+      <div class="detail-row">
+        <div class="detail-q">Q8 — Feature ranking</div>
+        <div class="detail-rank-list">${rankList}</div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-q">Q9 — Documents/resources needed</div>
+        ${textA(r.q9)}
+      </div>
+    </div>
+
+    <!-- Section 4 -->
+    <div class="detail-section">
+      <div class="detail-section-title">Concerns &amp; Barriers</div>
+      <div class="detail-row">
+        <div class="detail-q">Q10 — Concerns</div>
+        <div class="tags-row">${(r.q10||[]).map(v=>`<span class="tag-pill">${v}</span>`).join('') || '<span style="color:var(--text-muted);font-size:12px;">—</span>'}</div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-q">Q11 — What would increase usage</div>
+        ${textA(r.q11)}
+      </div>
+    </div>
+
+    <!-- Section 5 -->
+    <div class="detail-section">
+      <div class="detail-section-title">Overall Assessment</div>
+      <div class="detail-row">
+        <div class="detail-q">Q12 — Overall verdict</div>
+        <div style="margin-top:0.25rem;">${verdictChipHtml(r.q12)} <span style="font-size:13px;color:var(--text);margin-left:0.4rem;">${r.q12||''}</span></div>
+      </div>
+      <div class="detail-row">
+        <div class="detail-q">Q13 — Additional comments</div>
+        ${textA(r.q13)}
+      </div>
+    </div>`;
+}
+
+function closeDrawer() {
+  document.getElementById('drawer-overlay').classList.remove('open');
+  document.getElementById('response-drawer').classList.remove('open');
+  currentResponseId = null;
+}
+
+async function confirmDelete(id) {
+  if (!confirm('Delete this response permanently? This cannot be undone.')) return;
+  const result = await deleteResponse(id);
+  if (result.ok) {
+    closeDrawer();
+    if (activePage() === 'responses') {
+      await reloadResponses();
+    }
+    const newAgg = await fetchAgg();
+    if (newAgg.ok) {
+      agg = newAgg;
+      document.getElementById('total-badge').textContent = `${agg.total} response${agg.total!==1?'s':''}`;
+    }
+  } else {
+    alert('Delete failed: ' + result.error);
+  }
+}
+
+/* ─────────────────────────────────────────────
+   KEYBOARD
+───────────────────────────────────────────── */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeDrawer();
+});
+
+/* ─────────────────────────────────────────────
+   START
+───────────────────────────────────────────── */
+init();
+</script>
+</body>
+</html>

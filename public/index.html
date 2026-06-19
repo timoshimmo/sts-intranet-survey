@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STS — Intranet Needs Survey</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy: #1B3A6B;
+    --navy-dark: #112447;
+    --navy-light: #e8eef7;
+    --navy-mid: #3a5f9e;
+    --accent: #2176AE;
+    --accent-light: #deeaf6;
+    --text: #1a1a2e;
+    --text-muted: #5a6380;
+    --border: #cdd6e8;
+    --bg: #f4f6fb;
+    --white: #ffffff;
+    --success: #1a7a4a;
+    --success-bg: #e6f5ee;
+    --error: #c0392b;
+    --error-bg: #fdecea;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── SHARED HEADER ───────────────────────────────────────── */
+  .site-header { background: var(--navy); color: #fff; padding: 0; }
+  .header-inner { max-width: 760px; margin: 0 auto; padding: 2.5rem 1.5rem 2rem; }
+  .header-eyebrow {
+    font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: #8FAFD6; margin-bottom: 0.5rem; font-weight: 600;
+  }
+  .header-title {
+    font-size: clamp(1.4rem, 4vw, 2rem); font-weight: 700; color: #fff;
+    line-height: 1.2; margin-bottom: 0.75rem;
+  }
+  .header-sub { font-size: 14px; color: #B8CCE4; max-width: 560px; line-height: 1.6; }
+  .header-strip { background: var(--accent); height: 4px; }
+
+  /* ── PROGRESS BAR ────────────────────────────────────────── */
+  .progress-wrap {
+    background: var(--white); border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .progress-inner {
+    max-width: 760px; margin: 0 auto; padding: 0.75rem 1.5rem;
+    display: flex; align-items: center; gap: 1rem;
+  }
+  .progress-label { font-size: 12px; color: var(--text-muted); white-space: nowrap; min-width: 80px; }
+  .progress-bar-bg { flex: 1; height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
+  .progress-bar-fill {
+    height: 100%; background: var(--accent); border-radius: 99px;
+    transition: width 0.4s ease; width: 0%;
+  }
+  .progress-pct { font-size: 12px; font-weight: 600; color: var(--accent); min-width: 32px; text-align: right; }
+
+  /* ── MAIN LAYOUT ─────────────────────────────────────────── */
+  .main { max-width: 760px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  /* ── SECTION CARDS ───────────────────────────────────────── */
+  .section-card {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: var(--radius); margin-bottom: 1.5rem; overflow: hidden;
+  }
+  .section-header {
+    background: var(--navy-light); border-bottom: 1px solid var(--border);
+    padding: 1rem 1.5rem; display: flex; align-items: center; gap: 0.75rem;
+  }
+  .section-num {
+    background: var(--navy); color: #fff; font-size: 11px; font-weight: 700;
+    width: 24px; height: 24px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .section-title { font-size: 14px; font-weight: 700; color: var(--navy); text-transform: uppercase; letter-spacing: 0.06em; }
+  .section-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 2rem; }
+
+  /* ── QUESTIONS ───────────────────────────────────────────── */
+  .question { display: flex; flex-direction: column; gap: 0.6rem; }
+  .q-label { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.5; }
+  .q-label .q-num { color: var(--accent); margin-right: 4px; }
+  .q-hint { font-size: 12px; color: var(--text-muted); font-style: italic; margin-top: -0.2rem; }
+  .required-star { color: var(--error); margin-left: 2px; }
+
+  /* ── INPUTS ──────────────────────────────────────────────── */
+  textarea, input[type="text"], input[type="email"] {
+    width: 100%; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 0.6rem 0.8rem; font-size: 14px; font-family: inherit;
+    color: var(--text); background: var(--white); transition: border-color 0.15s; resize: vertical;
+  }
+  textarea:focus, input[type="text"]:focus, input[type="email"]:focus {
+    outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(33,118,174,0.12);
+  }
+  textarea { min-height: 90px; }
+
+  /* ── CHECKBOX & RADIO ────────────────────────────────────── */
+  .check-group, .radio-group { display: flex; flex-direction: column; gap: 0.45rem; }
+  .check-item, .radio-item {
+    display: flex; align-items: flex-start; gap: 0.6rem; padding: 0.55rem 0.8rem;
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    cursor: pointer; transition: background 0.12s, border-color 0.12s;
+  }
+  .check-item:hover, .radio-item:hover { background: var(--navy-light); border-color: var(--accent); }
+  .check-item input, .radio-item input { margin-top: 2px; accent-color: var(--accent); flex-shrink: 0; }
+  .check-item label, .radio-item label { font-size: 14px; cursor: pointer; line-height: 1.4; }
+  .check-item.other-item { flex-direction: column; gap: 0.4rem; }
+  .other-text { display: none; width: 100%; margin-top: 0.3rem; }
+  .check-item.other-item.active .other-text { display: block; }
+
+  /* ── RATING TABLE ────────────────────────────────────────── */
+  .rating-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .rating-table th {
+    background: var(--navy); color: #fff; font-weight: 600;
+    padding: 0.5rem 0.4rem; text-align: center; font-size: 11px; letter-spacing: 0.03em;
+  }
+  .rating-table th:first-child { text-align: left; padding-left: 0.75rem; border-radius: var(--radius-sm) 0 0 0; }
+  .rating-table th:last-child { border-radius: 0 var(--radius-sm) 0 0; }
+  .rating-table tr:nth-child(even) td { background: var(--navy-light); }
+  .rating-table td { padding: 0.55rem 0.4rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .rating-table td:first-child { padding-left: 0.75rem; font-size: 13px; line-height: 1.4; }
+  .rating-table td.radio-cell { text-align: center; }
+  .rating-table input[type="radio"] { accent-color: var(--accent); cursor: pointer; }
+
+  /* ── RANKING ─────────────────────────────────────────────── */
+  .rank-list { display: flex; flex-direction: column; gap: 0.5rem; }
+  .rank-item {
+    display: flex; align-items: center; gap: 0.75rem; padding: 0.55rem 0.8rem;
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--white); cursor: grab;
+    transition: box-shadow 0.15s, border-color 0.15s; user-select: none;
+  }
+  .rank-item:active { cursor: grabbing; box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+  .rank-item.dragging { opacity: 0.5; border-color: var(--accent); }
+  .rank-item.drag-over { border-color: var(--accent); background: var(--accent-light); }
+  .rank-handle { color: var(--text-muted); font-size: 16px; cursor: grab; }
+  .rank-badge {
+    background: var(--navy); color: #fff; font-size: 11px; font-weight: 700;
+    width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .rank-text { font-size: 13px; line-height: 1.4; }
+
+  /* ── INFO GRID ───────────────────────────────────────────── */
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 500px) { .info-grid { grid-template-columns: 1fr; } }
+  .field-group { display: flex; flex-direction: column; gap: 0.35rem; }
+  .field-label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+
+  /* ── SUBMIT ──────────────────────────────────────────────── */
+  .submit-area {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1.5rem;
+    display: flex; flex-direction: column; gap: 1rem; align-items: center; text-align: center;
+  }
+  .submit-note { font-size: 12px; color: var(--text-muted); }
+  .btn-submit {
+    background: var(--navy); color: #fff; border: none;
+    padding: 0.85rem 3rem; border-radius: var(--radius-sm);
+    font-size: 15px; font-weight: 700; cursor: pointer;
+    letter-spacing: 0.03em; transition: background 0.15s, transform 0.1s;
+  }
+  .btn-submit:hover { background: var(--navy-dark); }
+  .btn-submit:active { transform: scale(0.98); }
+  .btn-submit:disabled { background: var(--text-muted); cursor: not-allowed; }
+
+  /* ── VALIDATION ──────────────────────────────────────────── */
+  .field-error { font-size: 12px; color: var(--error); margin-top: 0.25rem; display: none; }
+  .question.has-error .field-error { display: block; }
+  .question.has-error textarea,
+  .question.has-error input[type="text"],
+  .question.has-error input[type="email"] { border-color: var(--error); }
+
+  /* ════════════════════════════════════════════════════════════
+     RESULTS PAGE
+     ════════════════════════════════════════════════════════════ */
+  #results-page { display: none; }
+  #results-page.visible { display: block; }
+  #survey-wrapper.hidden { display: none; }
+
+  /* ── Results hero banner ─────────────────────────────────── */
+  .results-hero {
+    background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy-mid) 100%);
+    color: #fff;
+  }
+  .results-hero-inner {
+    max-width: 760px; margin: 0 auto;
+    padding: 2.5rem 1.5rem 2rem;
+    display: flex; align-items: flex-start; gap: 1.25rem;
+  }
+  .results-check-icon {
+    flex-shrink: 0;
+    width: 52px; height: 52px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+  }
+  .results-hero-eyebrow {
+    font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: #8FAFD6; font-weight: 600; margin-bottom: 0.35rem;
+  }
+  .results-hero-title { font-size: clamp(1.25rem, 3.5vw, 1.75rem); font-weight: 700; line-height: 1.2; margin-bottom: 0.5rem; }
+  .results-hero-sub { font-size: 13px; color: #B8CCE4; }
+  .results-strip { background: var(--accent); height: 4px; }
+
+  /* ── Results main ────────────────────────────────────────── */
+  .results-main { max-width: 760px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  /* ── Respondent badge ────────────────────────────────────── */
+  .respondent-banner {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex; flex-wrap: wrap; gap: 1rem 2rem; align-items: center;
+  }
+  .respondent-field { display: flex; flex-direction: column; gap: 0.15rem; }
+  .respondent-field-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
+  .respondent-field-value { font-size: 14px; font-weight: 600; color: var(--navy); }
+
+  /* ── Result section card ─────────────────────────────────── */
+  .result-card {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: var(--radius); margin-bottom: 1.25rem; overflow: hidden;
+  }
+  .result-card-header {
+    background: var(--navy-light); border-bottom: 1px solid var(--border);
+    padding: 0.85rem 1.25rem; display: flex; align-items: center; gap: 0.75rem;
+  }
+  .result-card-num {
+    background: var(--navy); color: #fff; font-size: 11px; font-weight: 700;
+    width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .result-card-title { font-size: 13px; font-weight: 700; color: var(--navy); text-transform: uppercase; letter-spacing: 0.06em; }
+  .result-card-body { padding: 1.25rem; display: flex; flex-direction: column; gap: 1.25rem; }
+
+  /* ── Individual result rows ──────────────────────────────── */
+  .result-row { display: flex; flex-direction: column; gap: 0.3rem; }
+  .result-q { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+  .result-a { font-size: 14px; color: var(--text); }
+
+  /* Tag pills for multi-select answers */
+  .tag-list { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.2rem; }
+  .tag {
+    background: var(--accent-light); color: var(--accent);
+    border: 1px solid #b4d4ee; border-radius: 99px;
+    font-size: 12px; font-weight: 600; padding: 0.2rem 0.65rem;
+    line-height: 1.5;
+  }
+
+  /* Frequency badge */
+  .freq-badge {
+    display: inline-flex; align-items: center; gap: 0.45rem;
+  }
+  .freq-dot {
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+  }
+  .freq-label { font-size: 14px; font-weight: 600; }
+
+  /* Rating result rows */
+  .rating-result-table { width: 100%; border-collapse: collapse; }
+  .rating-result-table tr { border-bottom: 1px solid var(--border); }
+  .rating-result-table tr:last-child { border-bottom: none; }
+  .rating-result-table td { padding: 0.55rem 0.5rem; vertical-align: middle; font-size: 13px; }
+  .rating-result-table td:first-child { color: var(--text); line-height: 1.4; width: 55%; padding-left: 0; }
+  .rating-result-table td:last-child { text-align: right; padding-right: 0; }
+  .rating-pill {
+    display: inline-block; font-size: 11px; font-weight: 700;
+    padding: 0.2rem 0.6rem; border-radius: 99px; letter-spacing: 0.04em;
+  }
+  .pill-sa { background: #d4f0e5; color: #176b3e; }
+  .pill-a  { background: #deeaf6; color: #1B3A6B; }
+  .pill-n  { background: #f0f0f5; color: #5a6380; }
+  .pill-d  { background: #fff0cc; color: #7a5500; }
+  .pill-sd { background: #fde8e8; color: #8b1a1a; }
+
+  /* Rank result list */
+  .rank-result-list { display: flex; flex-direction: column; gap: 0.4rem; }
+  .rank-result-item {
+    display: flex; align-items: center; gap: 0.75rem;
+    padding: 0.5rem 0.8rem; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); background: var(--white);
+  }
+  .rank-result-item.top-three { border-color: var(--accent); background: var(--accent-light); }
+  .rank-result-badge {
+    background: var(--navy); color: #fff; font-size: 11px; font-weight: 700;
+    width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .rank-result-item.top-three .rank-result-badge { background: var(--accent); }
+  .rank-result-text { font-size: 13px; }
+
+  /* Long text answer */
+  .text-answer {
+    background: var(--navy-light); border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 0.65rem 0.9rem; font-size: 14px; color: var(--text);
+    line-height: 1.6; font-style: italic;
+  }
+  .text-answer.empty { color: var(--text-muted); font-style: normal; }
+
+  /* Overall verdict */
+  .verdict-banner {
+    display: flex; align-items: center; gap: 1rem;
+    padding: 1rem 1.25rem; border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+  }
+  .verdict-icon { font-size: 26px; flex-shrink: 0; }
+  .verdict-label { font-size: 15px; font-weight: 700; color: var(--navy); }
+  .verdict-sa { background: #d4f0e5; border-color: #8dd3b2; }
+  .verdict-a  { background: var(--accent-light); border-color: #b4d4ee; }
+  .verdict-n  { background: #f0f0f5; border-color: #ccc; }
+  .verdict-d  { background: #fff0cc; border-color: #f0d060; }
+  .verdict-sd { background: #fde8e8; border-color: #f0a0a0; }
+
+  /* Print / restart bar */
+  .results-actions {
+    display: flex; gap: 0.75rem; flex-wrap: wrap;
+    margin-top: 2rem; justify-content: center;
+  }
+  .btn-action {
+    border: 1.5px solid var(--accent); color: var(--accent);
+    background: var(--white); padding: 0.65rem 1.5rem;
+    border-radius: var(--radius-sm); font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: background 0.15s, color 0.15s;
+  }
+  .btn-action:hover { background: var(--accent-light); }
+  .btn-action.primary { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .btn-action.primary:hover { background: var(--navy-dark); }
+
+  .table-scroll { overflow-x: auto; }
+  @media (max-width: 600px) {
+    .rating-table th, .rating-table td { font-size: 11px; padding: 0.4rem 0.25rem; }
+    .rating-table th:first-child, .rating-table td:first-child { font-size: 12px; }
+  }
+  @media print {
+    .progress-wrap, .results-actions { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════
+     SURVEY PAGE
+     ════════════════════════════════════════════════════════════ -->
+<div id="survey-wrapper">
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="header-eyebrow">SEA TRANSPORT SERVICE GROUP · </div>
+    <h1 class="header-title">Staff Intranet Needs Assessment</h1>
+    <p class="header-sub">Help us understand whether an intranet will benefit you and your colleagues. This survey takes about 5 minutes. Your responses are confidential.</p>
+  </div>
+  <div class="header-strip"></div>
+</header>
+
+<div class="progress-wrap">
+  <div class="progress-inner">
+    <span class="progress-label" id="progress-label">Section 1 of 5</span>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-fill"></div></div>
+    <span class="progress-pct" id="progress-pct">0%</span>
+  </div>
+</div>
+
+<main class="main" id="survey-form">
+
+  <!-- About You -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-num">i</div>
+      <div class="section-title">About You</div>
+    </div>
+    <div class="section-body">
+      <div class="info-grid">
+        <div class="field-group">
+          <label class="field-label" for="dept">Department</label>
+          <input type="text" id="dept" placeholder="e.g. Operations, HR, Finance…">
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="role">Job Title / Role</label>
+          <input type="text" id="role" placeholder="e.g. Operations Officer">
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="tenure">Years at STS</label>
+          <input type="text" id="tenure" placeholder="e.g. 3">
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="location">Work Location</label>
+          <input type="text" id="location" placeholder="e.g. Port Harcourt, Vessel, Lagos">
+        </div>
+      </div>
+      <p style="font-size:12px; color:var(--text-muted); font-style:italic;">Name is optional — this survey can be completed anonymously.</p>
+    </div>
+  </div>
+
+  <!-- Section 1 -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <div class="section-title">Current Communication Challenges</div>
+    </div>
+    <div class="section-body">
+
+      <div class="question" id="q1">
+        <div class="q-label"><span class="q-num">1.</span> How do you currently receive important company updates, policies, or announcements? <span class="required-star">*</span></div>
+        <div class="q-hint">Select all that apply.</div>
+        <div class="check-group">
+          <div class="check-item"><input type="checkbox" id="q1a" name="q1" value="Email"><label for="q1a">Email</label></div>
+          <div class="check-item"><input type="checkbox" id="q1b" name="q1" value="Printed notices / noticeboards"><label for="q1b">Printed notices / noticeboards</label></div>
+          <div class="check-item"><input type="checkbox" id="q1c" name="q1" value="Team or department meetings"><label for="q1c">Team or department meetings</label></div>
+          <div class="check-item"><input type="checkbox" id="q1d" name="q1" value="WhatsApp or messaging apps"><label for="q1d">WhatsApp or other messaging apps</label></div>
+          <div class="check-item"><input type="checkbox" id="q1e" name="q1" value="Word of mouth"><label for="q1e">Word of mouth from colleagues or supervisors</label></div>
+          <div class="check-item other-item" id="q1-other-item">
+            <div style="display:flex;align-items:flex-start;gap:0.6rem;width:100%"><input type="checkbox" id="q1f" name="q1" value="Other"><label for="q1f">Other</label></div>
+            <input type="text" class="other-text" id="q1-other-text" placeholder="Please specify…">
+          </div>
+        </div>
+        <div class="field-error">Please select at least one option.</div>
+      </div>
+
+      <div class="question" id="q2">
+        <div class="q-label"><span class="q-num">2.</span> How often do you have difficulty finding information you need to do your job? <span class="required-star">*</span></div>
+        <div class="radio-group">
+          <div class="radio-item"><input type="radio" id="q2a" name="q2" value="Very often"><label for="q2a">Very often</label></div>
+          <div class="radio-item"><input type="radio" id="q2b" name="q2" value="Often"><label for="q2b">Often</label></div>
+          <div class="radio-item"><input type="radio" id="q2c" name="q2" value="Sometimes"><label for="q2c">Sometimes</label></div>
+          <div class="radio-item"><input type="radio" id="q2d" name="q2" value="Rarely"><label for="q2d">Rarely</label></div>
+          <div class="radio-item"><input type="radio" id="q2e" name="q2" value="Never"><label for="q2e">Never</label></div>
+        </div>
+        <div class="field-error">Please select one option.</div>
+      </div>
+
+      <div class="question" id="q3">
+        <div class="q-label"><span class="q-num">3.</span> What types of information are hardest to find when you need them?</div>
+        <textarea id="q3-text" placeholder="Describe in your own words or give examples…"></textarea>
+      </div>
+
+      <div class="question" id="q4">
+        <div class="q-label"><span class="q-num">4.</span> Have you ever wasted significant time looking for a document, form, or policy that should be easily available? <span class="required-star">*</span></div>
+        <div class="radio-group">
+          <div class="radio-item"><input type="radio" id="q4a" name="q4" value="Yes"><label for="q4a">Yes</label></div>
+          <div class="radio-item"><input type="radio" id="q4b" name="q4" value="No"><label for="q4b">No</label></div>
+        </div>
+        <div class="field-error">Please select one option.</div>
+        <div id="q4-detail" style="display:none; margin-top:0.5rem;">
+          <textarea id="q4-text" placeholder="If yes, please describe what happened…"></textarea>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Section 2 -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-num">2</div>
+      <div class="section-title">Business Case — Value of an Intranet</div>
+    </div>
+    <div class="section-body">
+
+      <div class="question" id="q5">
+        <div class="q-label"><span class="q-num">5.</span> Rate your agreement with each statement. <span class="required-star">*</span></div>
+        <div class="table-scroll">
+          <table class="rating-table" id="rating-table">
+            <thead>
+              <tr>
+                <th style="width:40%">Statement</th>
+                <th>Strongly agree</th>
+                <th>Agree</th>
+                <th>Neutral</th>
+                <th>Disagree</th>
+                <th>Strongly disagree</th>
+              </tr>
+            </thead>
+            <tbody id="rating-body"></tbody>
+          </table>
+        </div>
+        <div class="field-error">Please rate all statements.</div>
+      </div>
+
+      <div class="question" id="q6">
+        <div class="q-label"><span class="q-num">6.</span> In your view, what is the single most important reason STS should deploy an intranet? <span class="required-star">*</span></div>
+        <textarea id="q6-text" placeholder="Write your main reason here…"></textarea>
+        <div class="field-error">Please provide a reason.</div>
+      </div>
+
+      <div class="question" id="q7">
+        <div class="q-label"><span class="q-num">7.</span> Which business problems would an intranet most help to solve? <span class="required-star">*</span></div>
+        <div class="q-hint">Select up to 3.</div>
+        <div class="check-group" id="q7-group">
+          <div class="check-item"><input type="checkbox" name="q7" value="Staff missing announcements or policy changes"><label>Staff not knowing about important announcements or policy changes in time</label></div>
+          <div class="check-item"><input type="checkbox" name="q7" value="Difficulty sharing files across departments"><label>Difficulty sharing files, forms, or documents across departments</label></div>
+          <div class="check-item"><input type="checkbox" name="q7" value="No single source of truth for procedures"><label>Lack of a single source of truth for company procedures</label></div>
+          <div class="check-item"><input type="checkbox" name="q7" value="Poor coordination between onshore and offshore staff"><label>Poor coordination between onshore and offshore / vessel staff</label></div>
+          <div class="check-item"><input type="checkbox" name="q7" value="Duplication of work across teams"><label>Duplication of work because teams are unaware of what others are doing</label></div>
+          <div class="check-item"><input type="checkbox" name="q7" value="No reliable access to HR, payroll, or safety information"><label>No reliable place to access HR, payroll, or safety information</label></div>
+          <div class="check-item"><input type="checkbox" name="q7" value="Slow onboarding for new staff"><label>New staff taking too long to onboard without a central resource</label></div>
+          <div class="check-item other-item" id="q7-other-item">
+            <div style="display:flex;align-items:flex-start;gap:0.6rem;width:100%"><input type="checkbox" id="q7f" name="q7" value="Other"><label for="q7f">Other</label></div>
+            <input type="text" class="other-text" id="q7-other-text" placeholder="Please specify…">
+          </div>
+        </div>
+        <div class="field-error">Please select at least one option.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Section 3 -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-num">3</div>
+      <div class="section-title">Feature Priorities</div>
+    </div>
+    <div class="section-body">
+
+      <div class="question" id="q8">
+        <div class="q-label"><span class="q-num">8.</span> Drag to rank these intranet features — most useful to you at the top.</div>
+        <div class="q-hint">Drag and drop to reorder. The top item is your #1 priority.</div>
+        <div class="rank-list" id="rank-list"></div>
+      </div>
+
+      <div class="question" id="q9">
+        <div class="q-label"><span class="q-num">9.</span> Are there specific documents, forms, or resources every staff member should access through the intranet?</div>
+        <textarea id="q9-text" placeholder="e.g. Leave request forms, HSE checklists, staff handbook…"></textarea>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Section 4 -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-num">4</div>
+      <div class="section-title">Concerns &amp; Barriers</div>
+    </div>
+    <div class="section-body">
+
+      <div class="question" id="q10">
+        <div class="q-label"><span class="q-num">10.</span> What concerns, if any, do you have about introducing a company intranet? <span class="required-star">*</span></div>
+        <div class="q-hint">Select all that apply.</div>
+        <div class="check-group">
+          <div class="check-item"><input type="checkbox" name="q10" value="Not confident using online tools"><label>I am not confident using computers or online tools</label></div>
+          <div class="check-item"><input type="checkbox" name="q10" value="Privacy concerns"><label>I am concerned about privacy of my personal information</label></div>
+          <div class="check-item"><input type="checkbox" name="q10" value="May not be kept up to date"><label>I worry it may not be kept up to date</label></div>
+          <div class="check-item"><input type="checkbox" name="q10" value="Inconsistent use across company"><label>I do not think it will be used consistently across the company</label></div>
+          <div class="check-item"><input type="checkbox" name="q10" value="Limited internet access at work location"><label>I have limited internet access at my work location</label></div>
+          <div class="check-item"><input type="checkbox" name="q10" value="No concerns — fully supportive"><label>No concerns — I am fully supportive</label></div>
+          <div class="check-item other-item" id="q10-other-item">
+            <div style="display:flex;align-items:flex-start;gap:0.6rem;width:100%"><input type="checkbox" id="q10f" name="q10" value="Other"><label for="q10f">Other</label></div>
+            <input type="text" class="other-text" id="q10-other-text" placeholder="Please specify…">
+          </div>
+        </div>
+        <div class="field-error">Please select at least one option.</div>
+      </div>
+
+      <div class="question" id="q11">
+        <div class="q-label"><span class="q-num">11.</span> What would make you more likely to use the intranet regularly?</div>
+        <textarea id="q11-text" placeholder="e.g. Mobile-friendly design, offline access, regular updates from management…"></textarea>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Section 5 -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-num">5</div>
+      <div class="section-title">Overall Assessment</div>
+    </div>
+    <div class="section-body">
+
+      <div class="question" id="q12">
+        <div class="q-label"><span class="q-num">12.</span> Overall, do you believe deploying an intranet would benefit STS and its staff? <span class="required-star">*</span></div>
+        <div class="radio-group">
+          <div class="radio-item"><input type="radio" id="q12a" name="q12" value="Strongly agree — it is clearly needed"><label for="q12a">Strongly agree — it is clearly needed</label></div>
+          <div class="radio-item"><input type="radio" id="q12b" name="q12" value="Agree — it would be beneficial"><label for="q12b">Agree — it would be beneficial</label></div>
+          <div class="radio-item"><input type="radio" id="q12c" name="q12" value="Neutral — unsure either way"><label for="q12c">Neutral — unsure either way</label></div>
+          <div class="radio-item"><input type="radio" id="q12d" name="q12" value="Disagree — I do not see a strong need"><label for="q12d">Disagree — I do not see a strong need</label></div>
+          <div class="radio-item"><input type="radio" id="q12e" name="q12" value="Strongly disagree — it would not help"><label for="q12e">Strongly disagree — it would not help</label></div>
+        </div>
+        <div class="field-error">Please select one option.</div>
+      </div>
+
+      <div class="question" id="q13">
+        <div class="q-label"><span class="q-num">13.</span> Is there anything else you would like management to know when making the case for an intranet?</div>
+        <textarea id="q13-text" placeholder="Any additional comments, suggestions, or context…" style="min-height:110px;"></textarea>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Submit -->
+  <div class="submit-area">
+    <p class="submit-note">Fields marked <span style="color:var(--error)">*</span> are required. Your response is confidential.</p>
+    <button class="btn-submit" id="btn-submit" onclick="submitForm()">Submit survey</button>
+  </div>
+
+</main>
+</div><!-- /#survey-wrapper -->
+
+
+<!-- ════════════════════════════════════════════════════════════
+     RESULTS PAGE
+     ════════════════════════════════════════════════════════════ -->
+<div id="results-page">
+
+  <header class="results-hero">
+    <div class="results-hero-inner">
+      <div class="results-check-icon">✓</div>
+      <div class="results-hero-text">
+        <div class="results-hero-eyebrow">STS · Intranet Needs Survey</div>
+        <h1 class="results-hero-title">Your response has been recorded</h1>
+        <p class="results-hero-sub">Here is a summary of everything you submitted. Thank you for contributing to this assessment.</p>
+      </div>
+    </div>
+    <div class="results-strip"></div>
+  </header>
+
+  <main class="results-main">
+
+    <!-- Respondent info banner -->
+    <div class="respondent-banner" id="res-respondent"></div>
+
+    <!-- Card: Communication Challenges -->
+    <div class="result-card">
+      <div class="result-card-header">
+        <div class="result-card-num">1</div>
+        <div class="result-card-title">Communication Challenges</div>
+      </div>
+      <div class="result-card-body">
+        <div class="result-row">
+          <div class="result-q">Q1 — How do you currently receive company updates?</div>
+          <div class="tag-list" id="res-q1"></div>
+        </div>
+        <div class="result-row">
+          <div class="result-q">Q2 — How often do you have difficulty finding information?</div>
+          <div class="result-a" id="res-q2"></div>
+        </div>
+        <div class="result-row">
+          <div class="result-q">Q3 — What types of information are hardest to find?</div>
+          <div id="res-q3"></div>
+        </div>
+        <div class="result-row">
+          <div class="result-q">Q4 — Have you ever wasted significant time searching for a document?</div>
+          <div class="result-a" id="res-q4"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card: Business Case -->
+    <div class="result-card">
+      <div class="result-card-header">
+        <div class="result-card-num">2</div>
+        <div class="result-card-title">Business Case — Value of an Intranet</div>
+      </div>
+      <div class="result-card-body">
+        <div class="result-row">
+          <div class="result-q">Q5 — Agreement ratings</div>
+          <table class="rating-result-table" id="res-q5"></table>
+        </div>
+        <div class="result-row">
+          <div class="result-q">Q6 — Most important reason STS should deploy an intranet</div>
+          <div id="res-q6"></div>
+        </div>
+        <div class="result-row">
+          <div class="result-q">Q7 — Business problems an intranet would most help to solve</div>
+          <div class="tag-list" id="res-q7"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card: Feature Priorities -->
+    <div class="result-card">
+      <div class="result-card-header">
+        <div class="result-card-num">3</div>
+        <div class="result-card-title">Feature Priorities</div>
+      </div>
+      <div class="result-card-body">
+        <div class="result-row">
+          <div class="result-q">Q8 — Feature ranking (your order, 1 = highest priority)</div>
+          <div class="rank-result-list" id="res-q8" style="margin-top:0.4rem;"></div>
+        </div>
+        <div class="result-row">
+          <div class="result-q">Q9 — Documents or resources every staff member should access</div>
+          <div id="res-q9"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card: Concerns -->
+    <div class="result-card">
+      <div class="result-card-header">
+        <div class="result-card-num">4</div>
+        <div class="result-card-title">Concerns &amp; Barriers</div>
+      </div>
+      <div class="result-card-body">
+        <div class="result-row">
+          <div class="result-q">Q10 — Concerns about introducing an intranet</div>
+          <div class="tag-list" id="res-q10"></div>
+        </div>
+        <div class="result-row">
+          <div class="result-q">Q11 — What would make you more likely to use the intranet regularly?</div>
+          <div id="res-q11"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card: Overall -->
+    <div class="result-card">
+      <div class="result-card-header">
+        <div class="result-card-num">5</div>
+        <div class="result-card-title">Overall Assessment</div>
+      </div>
+      <div class="result-card-body">
+        <div class="result-row">
+          <div class="result-q">Q12 — Overall belief that an intranet would benefit STS</div>
+          <div id="res-q12" style="margin-top:0.35rem;"></div>
+        </div>
+        <div class="result-row">
+          <div class="result-q">Q13 — Additional comments for management</div>
+          <div id="res-q13"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="results-actions">
+      <button class="btn-action" onclick="window.print()">🖨 Print / Save as PDF</button>
+      <button class="btn-action primary" onclick="restartSurvey()">Submit another response</button>
+    </div>
+
+  </main>
+</div><!-- /#results-page -->
+
+
+<script>
+/* ─────────────────────────────────────────────
+   DATA
+───────────────────────────────────────────── */
+const ratingStatements = [
+  "A central intranet would save me time in my daily work",
+  "I would use an intranet regularly if one were available",
+  "Current internal communication at STS could be improved",
+  "I struggle to keep up with policy or procedural updates",
+  "All staff need access to the same up-to-date documents",
+  "Remote or offshore staff are disadvantaged without a central system",
+  "An intranet would improve teamwork across departments",
+  "An intranet would reduce unnecessary emails and messages"
+];
+
+const rankItems = [
+  "Company news & announcements",
+  "HR information (leave, payroll, benefits, policies)",
+  "Document & form library",
+  "Staff directory & contact list",
+  "Training materials & onboarding resources",
+  "Health, Safety & Environment (HSE) notices",
+  "Project & operations updates",
+  "IT helpdesk & support requests",
+  "Management notices & circulars"
+];
+
+/* ─────────────────────────────────────────────
+   BUILD SURVEY
+───────────────────────────────────────────── */
+function buildRatingTable() {
+  const tbody = document.getElementById('rating-body');
+  const cols = ['SA','A','N','D','SD'];
+  ratingStatements.forEach((stmt, i) => {
+    const tr = document.createElement('tr');
+    let html = `<td>${stmt}</td>`;
+    cols.forEach(c => {
+      html += `<td class="radio-cell"><input type="radio" name="rating_${i}" value="${c}" aria-label="${c} for: ${stmt}"></td>`;
+    });
+    tr.innerHTML = html;
+    tbody.appendChild(tr);
+  });
+}
+
+function buildRankList() {
+  const list = document.getElementById('rank-list');
+  rankItems.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'rank-item';
+    div.draggable = true;
+    div.dataset.idx = i;
+    div.innerHTML = `<span class="rank-handle">⠿</span><span class="rank-badge">${i+1}</span><span class="rank-text">${item}</span>`;
+    list.appendChild(div);
+  });
+  initDrag();
+}
+
+function updateRankBadges() {
+  document.querySelectorAll('.rank-item').forEach((el, i) => {
+    el.querySelector('.rank-badge').textContent = i + 1;
+  });
+}
+
+let dragSrc = null;
+function initDrag() {
+  const list = document.getElementById('rank-list');
+  list.addEventListener('dragstart', e => {
+    dragSrc = e.target.closest('.rank-item');
+    dragSrc.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  });
+  list.addEventListener('dragend', () => {
+    document.querySelectorAll('.rank-item').forEach(el => el.classList.remove('dragging','drag-over'));
+  });
+  list.addEventListener('dragover', e => {
+    e.preventDefault();
+    const target = e.target.closest('.rank-item');
+    if (target && target !== dragSrc) {
+      document.querySelectorAll('.rank-item').forEach(el => el.classList.remove('drag-over'));
+      target.classList.add('drag-over');
+    }
+  });
+  list.addEventListener('drop', e => {
+    e.preventDefault();
+    const target = e.target.closest('.rank-item');
+    if (target && target !== dragSrc) {
+      const items = [...list.querySelectorAll('.rank-item')];
+      const srcIdx = items.indexOf(dragSrc);
+      const tgtIdx = items.indexOf(target);
+      if (srcIdx < tgtIdx) list.insertBefore(dragSrc, target.nextSibling);
+      else list.insertBefore(dragSrc, target);
+      updateRankBadges();
+    }
+  });
+}
+
+function initOtherCheckboxes() {
+  ['q1','q7','q10'].forEach(name => {
+    const otherItem = document.getElementById(`${name}-other-item`);
+    if (!otherItem) return;
+    const cb = otherItem.querySelector('input[type="checkbox"]');
+    const txt = otherItem.querySelector('.other-text');
+    cb.addEventListener('change', () => {
+      otherItem.classList.toggle('active', cb.checked);
+      if (cb.checked) txt.focus();
+    });
+  });
+}
+
+function initQ4Toggle() {
+  document.querySelectorAll('input[name="q4"]').forEach(r => {
+    r.addEventListener('change', () => {
+      document.getElementById('q4-detail').style.display = r.value === 'Yes' ? 'block' : 'none';
+    });
+  });
+}
+
+function initQ7Limit() {
+  const group = document.getElementById('q7-group');
+  group.addEventListener('change', () => {
+    const checked = [...group.querySelectorAll('input[type="checkbox"]:checked')];
+    if (checked.length > 3) checked[checked.length - 1].checked = false;
+  });
+}
+
+/* ─────────────────────────────────────────────
+   PROGRESS
+───────────────────────────────────────────── */
+function updateProgress() {
+  const required = ['q1','q2','q4','q5','q6','q7','q10','q12'];
+  let filled = 0;
+  required.forEach(id => {
+    if (['q1','q7','q10'].includes(id)) {
+      if (document.querySelector(`input[name="${id}"]:checked`)) filled++;
+    } else if (['q2','q4','q12'].includes(id)) {
+      if (document.querySelector(`input[name="${id}"]:checked`)) filled++;
+    } else if (id === 'q5') {
+      const allFilled = ratingStatements.every((_, i) => document.querySelector(`input[name="rating_${i}"]:checked`));
+      if (allFilled) filled++;
+    } else if (id === 'q6') {
+      if (document.getElementById('q6-text').value.trim()) filled++;
+    }
+  });
+  const pct = Math.round((filled / required.length) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-pct').textContent = pct + '%';
+  const section = Math.min(5, Math.ceil((filled / required.length) * 5) + 1);
+  document.getElementById('progress-label').textContent = `Section ${section} of 5`;
+}
+
+/* ─────────────────────────────────────────────
+   VALIDATION
+───────────────────────────────────────────── */
+function validate() {
+  let valid = true;
+  function setError(id, hasError) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.toggle('has-error', hasError);
+    if (hasError) valid = false;
+  }
+  setError('q1',  !document.querySelector('input[name="q1"]:checked'));
+  setError('q2',  !document.querySelector('input[name="q2"]:checked'));
+  setError('q4',  !document.querySelector('input[name="q4"]:checked'));
+  const allRated = ratingStatements.every((_, i) => document.querySelector(`input[name="rating_${i}"]:checked`));
+  setError('q5', !allRated);
+  setError('q6',  !document.getElementById('q6-text').value.trim());
+  setError('q7',  !document.querySelector('input[name="q7"]:checked'));
+  setError('q10', !document.querySelector('input[name="q10"]:checked'));
+  setError('q12', !document.querySelector('input[name="q12"]:checked'));
+  return valid;
+}
+
+/* ─────────────────────────────────────────────
+   COLLECT
+───────────────────────────────────────────── */
+function collectResponses() {
+  const get = id => (document.getElementById(id) || {}).value || '';
+  const checked = name => [...document.querySelectorAll(`input[name="${name}"]:checked`)].map(el => el.value);
+  const radioVal = name => { const el = document.querySelector(`input[name="${name}"]:checked`); return el ? el.value : ''; };
+
+  const ratingKeys = ['SA','A','N','D','SD'];
+  const ratingLabels = ['Strongly agree','Agree','Neutral','Disagree','Strongly disagree'];
+  const ratings = ratingStatements.map((stmt, i) => {
+    const el = document.querySelector(`input[name="rating_${i}"]:checked`);
+    const idx = el ? ratingKeys.indexOf(el.value) : -1;
+    return { stmt, key: el ? el.value : '', label: idx >= 0 ? ratingLabels[idx] : '—' };
+  });
+
+  const rankOrder = [...document.querySelectorAll('.rank-item .rank-text')].map(el => el.textContent);
+
+  return {
+    dept: get('dept'), role: get('role'), tenure: get('tenure'), location: get('location'),
+    q1: checked('q1'), q2: radioVal('q2'), q3: get('q3-text'), q4: radioVal('q4'), q4detail: get('q4-text'),
+    ratings, q6: get('q6-text'), q7: checked('q7'),
+    ranking: rankOrder,
+    q9: get('q9-text'), q10: checked('q10'), q11: get('q11-text'),
+    q12: radioVal('q12'), q13: get('q13-text'),
+    submitted_at: new Date().toISOString()
+  };
+}
+
+/* ─────────────────────────────────────────────
+   RENDER RESULTS
+───────────────────────────────────────────── */
+function tags(arr) {
+  if (!arr || !arr.length) return '<span style="color:var(--text-muted);font-size:13px;">—</span>';
+  return arr.map(v => `<span class="tag">${v}</span>`).join('');
+}
+
+function textBlock(val) {
+  if (!val || !val.trim()) return '<div class="text-answer empty">No response provided</div>';
+  return `<div class="text-answer">${val.trim()}</div>`;
+}
+
+function ratingPillClass(key) {
+  return { SA:'pill-sa', A:'pill-a', N:'pill-n', D:'pill-d', SD:'pill-sd' }[key] || 'pill-n';
+}
+
+function freqColor(val) {
+  const map = {
+    'Very often': '#c0392b', 'Often': '#e67e22',
+    'Sometimes': '#2176AE', 'Rarely': '#27ae60', 'Never': '#1a7a4a'
+  };
+  return map[val] || 'var(--accent)';
+}
+
+function verdictClass(val) {
+  if (val.startsWith('Strongly agree')) return 'verdict-sa';
+  if (val.startsWith('Agree'))          return 'verdict-a';
+  if (val.startsWith('Neutral'))        return 'verdict-n';
+  if (val.startsWith('Disagree'))       return 'verdict-d';
+  return 'verdict-sd';
+}
+
+function verdictIcon(val) {
+  if (val.startsWith('Strongly agree')) return '🟢';
+  if (val.startsWith('Agree'))          return '🔵';
+  if (val.startsWith('Neutral'))        return '⚪';
+  if (val.startsWith('Disagree'))       return '🟡';
+  return '🔴';
+}
+
+function populateResults(data) {
+  /* Respondent banner */
+  const fields = [
+    ['Department',          data.dept     || '—'],
+    ['Role',                data.role     || '—'],
+    ['Years at STS',        data.tenure   || '—'],
+    ['Location',            data.location || '—'],
+    ['Submitted',           new Date(data.submitted_at).toLocaleString()],
+  ];
+  document.getElementById('res-respondent').innerHTML =
+    fields.map(([l,v]) => `<div class="respondent-field"><span class="respondent-field-label">${l}</span><span class="respondent-field-value">${v}</span></div>`).join('');
+
+  /* Q1 */
+  document.getElementById('res-q1').innerHTML = tags(data.q1);
+
+  /* Q2 */
+  document.getElementById('res-q2').innerHTML =
+    data.q2
+      ? `<span class="freq-badge"><span class="freq-dot" style="background:${freqColor(data.q2)}"></span><span class="freq-label">${data.q2}</span></span>`
+      : '<span style="color:var(--text-muted)">—</span>';
+
+  /* Q3 */
+  document.getElementById('res-q3').innerHTML = textBlock(data.q3);
+
+  /* Q4 */
+  let q4html = `<strong>${data.q4 || '—'}</strong>`;
+  if (data.q4 === 'Yes' && data.q4detail) q4html += `<div style="margin-top:0.4rem;">${textBlock(data.q4detail)}</div>`;
+  document.getElementById('res-q4').innerHTML = `<div class="result-a">${q4html}</div>`;
+
+  /* Q5 ratings */
+  const ratingTbody = document.getElementById('res-q5');
+  ratingTbody.innerHTML = data.ratings.map(r =>
+    `<tr>
+      <td>${r.stmt}</td>
+      <td><span class="rating-pill ${ratingPillClass(r.key)}">${r.label}</span></td>
+    </tr>`
+  ).join('');
+
+  /* Q6 */
+  document.getElementById('res-q6').innerHTML = textBlock(data.q6);
+
+  /* Q7 */
+  document.getElementById('res-q7').innerHTML = tags(data.q7);
+
+  /* Q8 ranking */
+  document.getElementById('res-q8').innerHTML = data.ranking.map((item, i) =>
+    `<div class="rank-result-item ${i < 3 ? 'top-three' : ''}">
+      <div class="rank-result-badge">${i+1}</div>
+      <div class="rank-result-text">${item}</div>
+    </div>`
+  ).join('');
+
+  /* Q9 */
+  document.getElementById('res-q9').innerHTML = textBlock(data.q9);
+
+  /* Q10 */
+  document.getElementById('res-q10').innerHTML = tags(data.q10);
+
+  /* Q11 */
+  document.getElementById('res-q11').innerHTML = textBlock(data.q11);
+
+  /* Q12 */
+  const vc = verdictClass(data.q12);
+  document.getElementById('res-q12').innerHTML =
+    `<div class="verdict-banner ${vc}">
+      <span class="verdict-icon">${verdictIcon(data.q12)}</span>
+      <span class="verdict-label">${data.q12 || '—'}</span>
+    </div>`;
+
+  /* Q13 */
+  document.getElementById('res-q13').innerHTML = textBlock(data.q13);
+}
+
+/* ─────────────────────────────────────────────
+   SUBMIT
+───────────────────────────────────────────── */
+async function submitForm() {
+  if (!validate()) {
+    const firstError = document.querySelector('.has-error');
+    if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
+  const btn = document.getElementById('btn-submit');
+  btn.disabled = true;
+  btn.textContent = 'Submitting…';
+
+  const data = collectResponses();
+
+  try {
+    const res = await fetch('/api/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error('Server error');
+  } catch (err) {
+    console.warn('API submit failed, saving locally:', err);
+    try {
+      const existing = JSON.parse(localStorage.getItem('sts_survey_responses') || '[]');
+      existing.push(data);
+      localStorage.setItem('sts_survey_responses', JSON.stringify(existing));
+    } catch(e) {}
+  }
+
+  populateResults(data);
+  document.getElementById('survey-wrapper').classList.add('hidden');
+  document.getElementById('results-page').classList.add('visible');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function restartSurvey() {
+  document.getElementById('results-page').classList.remove('visible');
+  document.getElementById('survey-wrapper').classList.remove('hidden');
+  document.getElementById('survey-form').reset();
+  document.getElementById('btn-submit').disabled = false;
+  document.getElementById('btn-submit').textContent = 'Submit survey';
+  document.getElementById('q4-detail').style.display = 'none';
+  ['q1','q7','q10'].forEach(n => {
+    const oi = document.getElementById(`${n}-other-item`);
+    if (oi) oi.classList.remove('active');
+  });
+  document.querySelectorAll('.has-error').forEach(el => el.classList.remove('has-error'));
+  updateProgress();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ─────────────────────────────────────────────
+   INIT
+───────────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', () => {
+  buildRatingTable();
+  buildRankList();
+  initOtherCheckboxes();
+  initQ4Toggle();
+  initQ7Limit();
+  document.addEventListener('change', updateProgress);
+  document.getElementById('q6-text').addEventListener('input', updateProgress);
+  updateProgress();
+});
+</script>
+</body>
+</html>
